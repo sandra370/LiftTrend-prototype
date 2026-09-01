@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <title>LiftTrend Prototype</title>
+    <link rel="stylesheet" href="styles.css?v=20260728-profile-zh1" />
+  </head>
+  <body>
+    <main class="phone-shell" aria-label="LiftTrend app prototype">
+      <section class="status-bar" aria-label="Device status">
+        <span data-status-time>9:41</span>
+        <span class="status-icons"><span data-status-signal>LTE</span> <span data-status-battery>100%</span></span>
+      </section>
+
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">LiftTrend</p>
+          <h1 id="screen-title">Today</h1>
+        </div>
+        <button class="watch-button" type="button" aria-label="Apple Watch connected" data-open-health>
+          <span class="watch-icon" aria-hidden="true"></span>
+          <span>
+            <strong>Watch</strong>
+            <small>Connected</small>
+          </span>
+        </button>
+      </header>
+
+      <section class="onboarding" data-onboarding>
+        <div class="onboarding-panel">
+          <span class="metric-label">Welcome to LiftTrend</span>
+          <h2>Set up your coaching profile</h2>
+          <p>Basic body data and goals help AI Coach personalize volume, progression, recovery, and Apple Health updates.</p>
+          <div class="onboarding-grid">
+            <label><span>Name</span><input placeholder="Your name" data-onboard-name /></label>
+            <label><span>Age</span><input placeholder="Optional" inputmode="numeric" data-onboard-age /></label>
+            <label><span>Height</span><input placeholder="Optional" inputmode="decimal" data-onboard-height /></label>
+            <label><span>Weight</span><input placeholder="Optional" inputmode="decimal" data-onboard-weight /></label>
+            <label><span>Sex</span><select data-onboard-sex><option value="">Choose</option><option>Female</option><option>Male</option><option>Prefer not to say</option></select></label>
+            <label><span>Training frequency</span><select data-onboard-frequency><option value="">Choose</option><option>3 days/week</option><option>4 days/week</option><option>5+ days/week</option></select></label>
+            <label><span>General goal</span><select data-onboard-goal><option value="">Choose</option><option>Fat loss</option><option>Lean muscle</option><option>Bulk</option><option>Strength</option><option>General health</option></select></label>
+            <label><span>Focus areas</span><input placeholder="Glutes, back, chest..." data-onboard-focus /></label>
+            <label><span>Target weight</span><input placeholder="Optional" inputmode="decimal" data-onboard-target-weight /></label>
+            <label><span>Current body fat</span><input placeholder="Optional" data-onboard-current-body-fat /></label>
+            <label><span>Target body fat</span><input placeholder="Optional" data-onboard-body-fat /></label>
+          </div>
+          <div class="action-row">
+            <button class="small-button" type="button" data-save-onboarding>Save Profile</button>
+            <button class="ghost-button" type="button" data-skip-onboarding>Skip</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen active" id="today-screen" aria-labelledby="today-tab">
+        <section class="focus-start" data-focus-start>
+          <div class="focus-hero">
+            <span class="metric-label">Ready to train</span>
+            <h2>Choose today's focus</h2>
+            <p>Pick a body area and LiftTrend will load a suggested workout you can edit.</p>
+            <button class="hero-link" type="button" data-open-standards>Saved Standards</button>
+          </div>
+
+          <div class="resume-panel" data-active-session-panel hidden>
+            <div>
+              <span class="metric-label">In-progress workout</span>
+              <strong data-active-session-title>Resume workout</strong>
+              <p data-active-session-copy>Your unsaved workout is available on this device.</p>
+            </div>
+            <div class="action-row">
+              <button class="small-button" type="button" data-resume-active-workout>Resume</button>
+              <button class="ghost-button" type="button" data-discard-active-workout>Discard</button>
+            </div>
+          </div>
+
+          <div class="focus-grid">
+            <button class="focus-card" type="button" data-workout="shoulder">
+              <span class="option-icon shoulder-option" aria-hidden="true"></span>
+              <strong>Shoulders</strong>
+              <small>Strength and shape</small>
+            </button>
+            <button class="focus-card" type="button" data-workout="glute">
+              <span class="option-icon glute-option" aria-hidden="true"></span>
+              <strong>Glutes</strong>
+              <small>Hip-dominant day</small>
+            </button>
+            <button class="focus-card" type="button" data-workout="back">
+              <span class="option-icon upper-option" aria-hidden="true"></span>
+              <strong>Back</strong>
+              <small>Pull strength</small>
+            </button>
+            <button class="focus-card" type="button" data-workout="chest">
+              <span class="option-icon chest-option" aria-hidden="true"></span>
+              <strong>Chest</strong>
+              <small>Press strength</small>
+            </button>
+            <button class="focus-card" type="button" data-workout="abs">
+              <span class="option-icon abs-option" aria-hidden="true"></span>
+              <strong>Abs</strong>
+              <small>Core control</small>
+            </button>
+            <button class="focus-card" type="button" data-workout="arms">
+              <span class="option-icon arms-option" aria-hidden="true"></span>
+              <strong>Arms</strong>
+              <small>Biceps and triceps</small>
+            </button>
+            <button class="focus-card" type="button" data-workout="recovery">
+              <span class="option-icon recovery-option" aria-hidden="true"></span>
+              <strong>Recovery</strong>
+              <small>Full-body reset</small>
+            </button>
+            <button class="focus-card" type="button" data-workout="custom">
+              <span class="option-icon custom-option" aria-hidden="true"></span>
+              <strong>Custom</strong>
+              <small>Start empty</small>
+            </button>
+          </div>
+        </section>
+
+        <section class="workout-session" data-workout-session hidden>
+          <div class="record-panel">
+            <div>
+              <span class="metric-label">Current workout</span>
+              <h2 data-workout-title>Glute Focus</h2>
+              <p data-workout-status>Recording set 3 of Hip Thrust</p>
+            </div>
+            <div class="record-actions">
+              <button class="secondary-action" type="button" data-open-workouts>Change Workout</button>
+              <button class="secondary-action" type="button" data-save-standard>Save Standard</button>
+              <button class="secondary-action" type="button" data-open-standards>Standards</button>
+              <button class="finish-action" type="button" data-finish-workout>Finish Workout</button>
+            </div>
+          </div>
+
+          <div class="watch-strip">
+            <div>
+              <span class="metric-label">Heart rate</span>
+              <strong data-watch-heart-rate>128</strong>
+              <span>bpm</span>
+            </div>
+            <div>
+              <span class="metric-label">Active cal</span>
+              <strong data-watch-calories>214</strong>
+              <span data-energy-unit>kcal</span>
+            </div>
+            <div>
+              <span class="metric-label">Time</span>
+              <strong data-watch-time>42</strong>
+              <span>min</span>
+            </div>
+          </div>
+
+          <div class="section-heading">
+            <h2 data-workout-heading>Glute Focus</h2>
+            <span data-workout-count>3 of 5 exercises</span>
+          </div>
+
+          <div class="exercise-list" data-exercise-list></div>
+
+          <button class="add-exercise-button" type="button" data-open-add-exercise>Add Exercise</button>
+        </section>
+
+        <section class="today-summary" data-today-summary hidden>
+          <div class="summary-hero">
+            <span class="metric-label">Workout complete</span>
+            <h2 data-summary-title>Today's Summary</h2>
+            <p data-summary-note>Nice work. Your set details are saved into today's recordings.</p>
+          </div>
+          <div class="summary-metrics">
+            <div>
+              <span class="metric-label">Active cal</span>
+              <strong data-summary-calories>214</strong>
+              <span data-energy-unit>kcal</span>
+            </div>
+            <div>
+              <span class="metric-label">Time</span>
+              <strong data-summary-time>42</strong>
+              <span>min</span>
+            </div>
+            <div>
+              <span class="metric-label">Exercises</span>
+              <strong data-summary-exercise-count>0</strong>
+              <span>logged</span>
+            </div>
+          </div>
+          <div class="summary-trends-note" data-summary-trends-note>
+            Trends updated: this workout is included in Week, Month, and Year views.
+          </div>
+          <div class="summary-list" data-summary-exercises></div>
+          <div class="standard-save-panel">
+            <label>
+              <span class="metric-label">Save as standard</span>
+              <input type="text" value="Workout Standard" data-summary-standard-name />
+            </label>
+            <button class="small-button" type="button" data-summary-save-standard>Save Standard</button>
+          </div>
+          <div class="action-row">
+            <button class="small-button" type="button" data-summary-new-workout>Back to Today</button>
+            <button class="ghost-button" type="button" data-screen-link="trends-screen">View Updated Trends</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="workout-sheet" aria-label="Choose workout" data-workout-sheet hidden>
+        <div class="sheet-scrim" data-close-workouts></div>
+        <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="workout-sheet-title">
+          <div class="sheet-handle" aria-hidden="true"></div>
+          <div class="exercise-topline">
+            <div>
+              <p class="eyebrow">Today</p>
+              <h2 id="workout-sheet-title">Choose workout</h2>
+            </div>
+            <button class="ghost-button" type="button" data-close-workouts>Close</button>
+          </div>
+
+          <div class="switch-warning" role="alertdialog" aria-live="assertive" data-workout-switch-warning hidden>
+            <div>
+              <span class="metric-label">Unsaved workout</span>
+              <strong data-workout-switch-title>Keep your current workout?</strong>
+              <p data-workout-switch-copy>Starting another workout will discard the sets you have not saved yet.</p>
+            </div>
+            <div class="action-row">
+              <button class="ghost-button" type="button" data-keep-current-workout>Keep Current</button>
+              <button class="danger-button" type="button" data-confirm-workout-switch>Discard & Switch</button>
+            </div>
+          </div>
+
+          <div class="workout-options">
+            <button class="workout-option" type="button" data-workout="shoulder">
+              <span class="option-icon shoulder-option" aria-hidden="true"></span>
+              <span>
+                <strong>Shoulder Strength</strong>
+                <small>Lateral raise · Shoulder press · Rear delt fly</small>
+              </span>
+            </button>
+            <button class="workout-option" type="button" data-workout="glute">
+              <span class="option-icon glute-option" aria-hidden="true"></span>
+              <span>
+                <strong>Glute Focus</strong>
+                <small>Hip thrust · Cable kickback · Lateral raise</small>
+              </span>
+            </button>
+            <button class="workout-option" type="button" data-workout="back">
+              <span class="option-icon upper-option" aria-hidden="true"></span>
+              <span>
+                <strong>Back Focus</strong>
+                <small>Lat pulldown · Row · Face pull</small>
+              </span>
+            </button>
+            <button class="workout-option" type="button" data-workout="chest">
+              <span class="option-icon chest-option" aria-hidden="true"></span>
+              <span>
+                <strong>Chest Focus</strong>
+                <small>Chest press · Incline press · Cable fly</small>
+              </span>
+            </button>
+            <button class="workout-option" type="button" data-workout="abs">
+              <span class="option-icon abs-option" aria-hidden="true"></span>
+              <span>
+                <strong>Abs Focus</strong>
+                <small>Dead bug · Cable crunch · Plank</small>
+              </span>
+            </button>
+            <button class="workout-option" type="button" data-workout="arms">
+              <span class="option-icon arms-option" aria-hidden="true"></span>
+              <span>
+                <strong>Arms Focus</strong>
+                <small>Curl · Triceps pressdown · Hammer curl</small>
+              </span>
+            </button>
+            <button class="workout-option" type="button" data-workout="recovery">
+              <span class="option-icon recovery-option" aria-hidden="true"></span>
+              <span>
+                <strong>Recovery Flow</strong>
+                <small>Mobility · Light pull · Core reset</small>
+              </span>
+            </button>
+            <button class="workout-option custom" type="button" data-workout="custom">
+              <span class="option-icon custom-option" aria-hidden="true"></span>
+              <span>
+                <strong>Build Custom Workout</strong>
+                <small>Start empty and add exercises manually</small>
+              </span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="workout-sheet" aria-label="Add exercise" data-add-exercise-sheet hidden>
+        <div class="sheet-scrim" data-close-add-exercise></div>
+        <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="add-exercise-title">
+          <div class="sheet-handle" aria-hidden="true"></div>
+          <div class="exercise-topline">
+            <div>
+              <p class="eyebrow">Add to workout</p>
+              <h2 id="add-exercise-title">Choose exercise</h2>
+            </div>
+            <button class="ghost-button" type="button" data-close-add-exercise>Close</button>
+          </div>
+          <label class="search-field">
+            <span class="search-icon" aria-hidden="true"></span>
+            <input type="search" placeholder="Search recorded exercises" aria-label="Search recorded exercises" data-exercise-search />
+          </label>
+          <div class="trend-options add-options">
+            <button class="trend-option" type="button" data-add-exercise="Lat Pulldown" data-group="Back"><span>Back</span>Lat Pulldown</button>
+            <button class="trend-option" type="button" data-add-exercise="Seated Row" data-group="Back"><span>Back</span>Seated Row</button>
+            <button class="trend-option" type="button" data-add-exercise="Face Pull" data-group="Rear delts"><span>Rear delts</span>Face Pull</button>
+            <button class="trend-option" type="button" data-add-exercise="Chest Press" data-group="Chest"><span>Chest</span>Chest Press</button>
+            <button class="trend-option" type="button" data-add-exercise="Incline Dumbbell Press" data-group="Upper chest"><span>Upper chest</span>Incline Dumbbell Press</button>
+            <button class="trend-option" type="button" data-add-exercise="Cable Fly" data-group="Chest"><span>Chest</span>Cable Fly</button>
+            <button class="trend-option" type="button" data-add-exercise="Lateral Raise" data-group="Side delts"><span>Side delts</span>Lateral Raise</button>
+            <button class="trend-option" type="button" data-add-exercise="Dumbbell Shoulder Press" data-group="Shoulders"><span>Shoulders</span>Dumbbell Shoulder Press</button>
+            <button class="trend-option" type="button" data-add-exercise="Rear Delt Fly" data-group="Rear delts"><span>Rear delts</span>Rear Delt Fly</button>
+            <button class="trend-option" type="button" data-add-exercise="Hip Thrust" data-group="Glutes"><span>Glutes</span>Hip Thrust</button>
+            <button class="trend-option" type="button" data-add-exercise="Cable Kickback" data-group="Glutes"><span>Glutes</span>Cable Kickback</button>
+            <button class="trend-option" type="button" data-add-exercise="Romanian Deadlift" data-group="Hamstrings"><span>Hamstrings</span>Romanian Deadlift</button>
+            <button class="trend-option" type="button" data-add-exercise="Goblet Squat" data-group="Quads"><span>Quads</span>Goblet Squat</button>
+            <button class="trend-option" type="button" data-add-exercise="Dumbbell Curl" data-group="Arms"><span>Arms</span>Dumbbell Curl</button>
+            <button class="trend-option" type="button" data-add-exercise="Triceps Pressdown" data-group="Arms"><span>Arms</span>Triceps Pressdown</button>
+            <button class="trend-option" type="button" data-add-exercise="Hammer Curl" data-group="Arms"><span>Arms</span>Hammer Curl</button>
+            <button class="trend-option" type="button" data-add-exercise="Cable Crunch" data-group="Abs"><span>Abs</span>Cable Crunch</button>
+            <button class="trend-option" type="button" data-add-exercise="Dead Bug" data-group="Abs"><span>Abs</span>Dead Bug</button>
+            <button class="trend-option" type="button" data-add-exercise="Plank" data-group="Abs"><span>Abs</span>Plank</button>
+            <button class="trend-option custom" type="button" data-add-exercise="Custom Exercise" data-group="Custom"><span>Custom</span>Custom Exercise</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="workout-sheet" aria-label="Saved standard workouts" data-standards-sheet hidden>
+        <div class="sheet-scrim" data-close-standards></div>
+        <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="standards-title">
+          <div class="sheet-handle" aria-hidden="true"></div>
+          <div class="exercise-topline">
+            <div>
+              <p class="eyebrow">Reusable workouts</p>
+              <h2 id="standards-title">Saved Standards</h2>
+            </div>
+            <button class="ghost-button" type="button" data-close-standards>Close</button>
+          </div>
+          <label class="standard-search">
+            <span>Find standard</span>
+            <input type="search" placeholder="Search standards or exercises" aria-label="Search saved standards or exercises" data-standards-search />
+          </label>
+          <div class="trend-options" data-standards-list></div>
+        </div>
+      </section>
+
+      <template id="glute-template">
+        <article class="exercise-card current">
+          <div class="exercise-topline">
+            <div>
+              <h3>Hip Thrust</h3>
+              <p>Last time 135 lb · 4 x 10</p>
+            </div>
+            <div class="exercise-actions"><button class="small-button" type="button" data-finish-set>Finish Set</button><button class="outline-button" type="button" data-finish-exercise>Finish Exercise</button></div>
+          </div>
+          <div class="set-grid" aria-label="Hip thrust sets">
+            <div class="set-row complete"><span>1</span><strong>135 lb</strong><strong>10 reps</strong><span>RPE 7</span></div>
+            <div class="set-row complete"><span>2</span><strong>135 lb</strong><strong>10 reps</strong><span>RPE 8</span></div>
+            <div class="set-row active-set"><span>3</span><label><span>Weight</span><input value="135" inputmode="decimal" aria-label="Weight" /></label><label><span>Reps</span><input value="10" inputmode="numeric" aria-label="Reps" /></label><label><span>RPE</span><input value="8" inputmode="decimal" aria-label="RPE" /></label></div>
+          </div>
+        </article>
+        <article class="exercise-card">
+          <div class="exercise-topline">
+            <div><h3>Cable Kickback</h3><p>Next · target 3 x 12</p></div>
+            <span class="pill">Glutes</span>
+          </div>
+        </article>
+        <article class="exercise-card">
+          <div class="exercise-topline">
+            <div><h3>Lateral Raise</h3><p>Suggested upgrade: 10 lb · 3 x 10</p></div>
+            <span class="pill amber">AI</span>
+          </div>
+        </article>
+      </template>
+
+      <template id="shoulder-template">
+        <article class="exercise-card current">
+          <div class="exercise-topline">
+            <div><h3>Lateral Raise</h3><p>Last time 7.5 lb · 4 x 15</p></div>
+            <div class="exercise-actions"><button class="small-button" type="button" data-finish-set>Finish Set</button><button class="outline-button" type="button" data-finish-exercise>Finish Exercise</button></div>
+          </div>
+          <div class="set-grid" aria-label="Lateral raise sets">
+            <div class="set-row complete"><span>1</span><strong>10 lb</strong><strong>10 reps</strong><span>RPE 7</span></div>
+            <div class="set-row active-set"><span>2</span><label><span>Weight</span><input value="10" inputmode="decimal" aria-label="Weight" /></label><label><span>Reps</span><input value="10" inputmode="numeric" aria-label="Reps" /></label><label><span>RPE</span><input value="8" inputmode="decimal" aria-label="RPE" /></label></div>
+          </div>
+        </article>
+        <article class="exercise-card">
+          <div class="exercise-topline">
+            <div><h3>Dumbbell Shoulder Press</h3><p>Next · target 3 x 8</p></div>
+            <span class="pill amber">Shoulders</span>
+          </div>
+        </article>
+        <article class="exercise-card">
+          <div class="exercise-topline">
+            <div><h3>Rear Delt Fly</h3><p>Next · target 3 x 12</p></div>
+            <span class="pill">Upper</span>
+          </div>
+        </article>
+      </template>
+
+      <template id="back-template">
+        <article class="exercise-card current">
+          <div class="exercise-topline">
+            <div><h3>Lat Pulldown</h3><p>Last time 70 lb · 3 x 10</p></div>
+            <div class="exercise-actions"><button class="small-button" type="button" data-finish-set>Finish Set</button><button class="outline-button" type="button" data-finish-exercise>Finish Exercise</button></div>
+          </div>
+          <div class="set-grid" aria-label="Lat pulldown sets">
+            <div class="set-row active-set"><span>1</span><label><span>Weight</span><input value="70" inputmode="decimal" aria-label="Weight" /></label><label><span>Reps</span><input value="10" inputmode="numeric" aria-label="Reps" /></label><label><span>RPE</span><input value="7" inputmode="decimal" aria-label="RPE" /></label></div>
+          </div>
+        </article>
+        <article class="exercise-card">
+          <div class="exercise-topline">
+            <div><h3>Seated Row</h3><p>Next · target 3 x 10</p></div>
+            <span class="pill">Back</span>
+          </div>
+        </article>
+        <article class="exercise-card">
+          <div class="exercise-topline">
+            <div><h3>Face Pull</h3><p>Next · target 3 x 15</p></div>
+            <span class="pill amber">Rear delt</span>
+          </div>
+        </article>
+      </template>
+
+      <template id="chest-template">
+        <article class="exercise-card current">
+          <div class="exercise-topline">
+            <div><h3>Chest Press</h3><p>Last time 45 lb · 3 x 10</p></div>
+            <div class="exercise-actions"><button class="small-button" type="button" data-finish-set>Finish Set</button><button class="outline-button" type="button" data-finish-exercise>Finish Exercise</button></div>
+          </div>
+          <div class="set-grid" aria-label="Chest press sets">
+            <div class="set-row complete"><span>1</span><strong>45 lb</strong><strong>10 reps</strong><span>RPE 7</span></div>
+            <div class="set-row active-set"><span>2</span><label><span>Weight</span><input value="45" inputmode="decimal" aria-label="Weight" /></label><label><span>Reps</span><input value="10" inputmode="numeric" aria-label="Reps" /></label><label><span>RPE</span><input value="8" inputmode="decimal" aria-label="RPE" /></label></div>
+          </div>
+        </article>
+        <article class="exercise-card">
+          <div class="exercise-topline">
+            <div><h3>Incline Dumbbell Press</h3><p>Next · target 3 x 8</p></div>
+            <span class="pill coral">Chest</span>
+          </div>
+        </article>
+        <article class="exercise-card">
+          <div class="exercise-topline">
+            <div><h3>Cable Fly</h3><p>Next · target 3 x 12</p></div>
+            <span class="pill">Accessory</span>
+          </div>
+        </article>
+      </template>
+
+      <template id="abs-template">
+        <article class="exercise-card current">
+          <div class="exercise-topline">
+            <div><h3>Cable Crunch</h3><p>Standard 30 lb · 3 x 12</p></div>
+            <div class="exercise-actions"><button class="small-button" type="button" data-finish-set>Finish Set</button><button class="outline-button" type="button" data-finish-exercise>Finish Exercise</button></div>
+          </div>
+          <div class="set-grid" aria-label="Cable crunch sets">
+            <div class="set-row active-set"><span>1</span><label><span>Weight</span><input value="30" inputmode="decimal" aria-label="Weight" /></label><label><span>Reps</span><input value="12" inputmode="numeric" aria-label="Reps" /></label><label><span>RPE</span><input value="7" inputmode="decimal" aria-label="RPE" /></label></div>
+          </div>
+        </article>
+        <article class="exercise-card"><div class="exercise-topline"><div><h3>Dead Bug</h3><p>Next · target 3 x 10/side</p></div><span class="pill">Core</span></div></article>
+        <article class="exercise-card"><div class="exercise-topline"><div><h3>Plank</h3><p>Next · target 3 x 45 sec</p></div><span class="pill">Core</span></div></article>
+      </template>
+
+      <template id="arms-template">
+        <article class="exercise-card current">
+          <div class="exercise-topline">
+            <div><h3>Dumbbell Curl</h3><p>Standard 15 lb · 3 x 10</p></div>
+            <div class="exercise-actions"><button class="small-button" type="button" data-finish-set>Finish Set</button><button class="outline-button" type="button" data-finish-exercise>Finish Exercise</button></div>
+          </div>
+          <div class="set-grid" aria-label="Dumbbell curl sets">
+            <div class="set-row active-set"><span>1</span><label><span>Weight</span><input value="15" inputmode="decimal" aria-label="Weight" /></label><label><span>Reps</span><input value="10" inputmode="numeric" aria-label="Reps" /></label><label><span>RPE</span><input value="7" inputmode="decimal" aria-label="RPE" /></label></div>
+          </div>
+        </article>
+        <article class="exercise-card"><div class="exercise-topline"><div><h3>Triceps Pressdown</h3><p>Next · target 3 x 12</p></div><span class="pill coral">Arms</span></div></article>
+        <article class="exercise-card"><div class="exercise-topline"><div><h3>Hammer Curl</h3><p>Next · target 2 x 12</p></div><span class="pill">Accessory</span></div></article>
+      </template>
+
+      <template id="recovery-template">
+        <article class="exercise-card current">
+          <div class="exercise-topline">
+            <div><h3>Mobility Flow</h3><p>Standard bodyweight · 10 min</p></div>
+            <div class="exercise-actions"><button class="small-button" type="button" data-finish-set>Finish Set</button><button class="outline-button" type="button" data-finish-exercise>Finish Exercise</button></div>
+          </div>
+          <div class="set-grid" aria-label="Mobility flow block">
+            <div class="set-row active-set"><span>1</span><label><span>Duration</span><input value="10 min" inputmode="decimal" aria-label="Duration" data-set-field="duration" /></label><label><span>Distance (m)</span><input value="" inputmode="decimal" aria-label="Distance" data-set-field="distance" /></label><label><span>RPE</span><input value="4" inputmode="decimal" aria-label="RPE" data-set-field="rpe" /></label></div>
+          </div>
+        </article>
+        <article class="exercise-card"><div class="exercise-topline"><div><h3>Light Lat Pulldown</h3><p>Next · target 2 x 15</p></div><span class="pill green">Recovery</span></div></article>
+        <article class="exercise-card"><div class="exercise-topline"><div><h3>Dead Bug</h3><p>Next · target 2 x 8/side</p></div><span class="pill">Core</span></div></article>
+      </template>
+
+      <template id="custom-template">
+        <article class="empty-workout">
+          <h3>No exercises yet</h3>
+          <p>Use Add Exercise below to choose a recorded movement or create a custom one.</p>
+        </article>
+      </template>
+
+      <section class="screen" id="trends-screen" aria-labelledby="trends-tab">
+        <div class="segmented" role="tablist" aria-label="Trend range">
+          <button class="selected" type="button" data-trend-range="week">Week</button>
+          <button type="button" data-trend-range="month">Month</button>
+          <button type="button" data-trend-range="year">Year</button>
+        </div>
+
+        <div class="trends-freshness" data-trends-freshness>
+          Latest saved workout is included in these trends.
+        </div>
+
+        <div class="trend-summary">
+          <div>
+            <span class="metric-label">Total calories</span>
+            <strong data-trend-calories>1,420</strong>
+            <span class="positive" data-trend-calories-subtitle>+9% vs last week</span>
+          </div>
+          <div>
+            <span class="metric-label">Training time</span>
+            <strong data-trend-time>3h 48m</strong>
+            <span data-trend-time-subtitle>5 workouts</span>
+          </div>
+          <div>
+            <span class="metric-label">Workouts</span>
+            <strong data-trend-workouts>5</strong>
+            <span data-trend-workouts-subtitle>+1 vs last week</span>
+          </div>
+        </div>
+
+        <div class="chart-panel body-metrics-panel" data-body-metrics-panel>
+          <div class="section-heading compact">
+            <h2>Body Metrics</h2>
+          </div>
+          <div class="body-metric-grid" data-body-metric-grid></div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="section-heading compact">
+            <h2>Session Mix</h2>
+            <span>by workout focus</span>
+          </div>
+          <p class="chart-note">Distribution check for whether this period matches your intended split.</p>
+          <div class="bar-row" data-muscle-row="chest">
+            <span>Chest</span>
+            <div class="bar-track"><div class="bar chest" style="width: 72%"></div></div>
+            <strong>2x</strong>
+          </div>
+          <div class="bar-row" data-muscle-row="shoulders">
+            <span>Shoulders</span>
+            <div class="bar-track"><div class="bar shoulder" style="width: 42%"></div></div>
+            <strong>1x</strong>
+          </div>
+          <div class="bar-row" data-muscle-row="back">
+            <span>Back</span>
+            <div class="bar-track"><div class="bar back" style="width: 46%"></div></div>
+            <strong>1x</strong>
+          </div>
+          <div class="bar-row" data-muscle-row="glutes">
+            <span>Glutes/Legs</span>
+            <div class="bar-track"><div class="bar glute" style="width: 64%"></div></div>
+            <strong>1x</strong>
+          </div>
+          <div class="insight-card">
+            <strong>Readout</strong>
+            <span data-muscle-readout>This week: 2 chest, 1 shoulder, 1 back, 1 glute/leg.</span>
+          </div>
+          <div class="ai-readout">
+            <span class="pill amber">AI suggestion</span>
+            <p data-muscle-ai-readout>Based on your week Session Mix, glutes/legs are underrepresented for your glute-growth goal. I’d add one glute-focused workout next, then use Exercise Trends to check hip thrust or kickback volume.</p>
+          </div>
+        </div>
+
+        <div class="chart-panel exercise-trends-panel">
+          <div class="section-heading compact">
+            <h2 data-exercise-trend-title>Hip Thrust</h2>
+            <span data-exercise-trend-metric>4-week volume</span>
+          </div>
+          <div class="exercise-picker" aria-label="Exercise trend picker">
+            <div class="trend-chip selected" data-trend-chip="hipThrust"><button type="button" data-exercise-trend="hipThrust"><span>Hip Thrust</span><small>volume</small></button><button class="remove-trend" type="button" data-remove-trend="hipThrust" aria-label="Hide Hip Thrust">×</button></div>
+            <div class="trend-chip" data-trend-chip="rowErg"><button type="button" data-exercise-trend="rowErg"><span>Row Erg</span><small>distance</small></button><button class="remove-trend" type="button" data-remove-trend="rowErg" aria-label="Hide Row Erg">×</button></div>
+            <div class="trend-chip" data-trend-chip="treadmillWalk"><button type="button" data-exercise-trend="treadmillWalk"><span>Treadmill Walk</span><small>distance</small></button><button class="remove-trend" type="button" data-remove-trend="treadmillWalk" aria-label="Hide Treadmill Walk">×</button></div>
+            <div class="trend-chip" data-trend-chip="foamRolling"><button type="button" data-exercise-trend="foamRolling"><span>Foam Rolling</span><small>time</small></button><button class="remove-trend" type="button" data-remove-trend="foamRolling" aria-label="Hide Foam Rolling">×</button></div>
+            <button class="add-trend-button" type="button" data-open-trend-manager>Replace selected</button>
+          </div>
+          <div class="line-chart" aria-label="Hip Thrust volume trend chart" data-exercise-chart>
+            <span style="height: 48%"></span>
+            <span style="height: 56%"></span>
+            <span style="height: 64%"></span>
+            <span style="height: 72%"></span>
+          </div>
+          <div class="chart-labels">
+            <span>W1</span>
+            <span>W2</span>
+            <span>W3</span>
+            <span>W4</span>
+          </div>
+          <p class="chart-note" data-exercise-trend-note>Best used within one exercise: this shows whether hip thrust work is progressing without comparing it to unrelated lifts.</p>
+        </div>
+      </section>
+
+      <section class="workout-sheet" aria-label="Manage exercise trends" data-trend-manager hidden>
+        <div class="sheet-scrim" data-close-trend-manager></div>
+        <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="trend-manager-title">
+          <div class="sheet-handle" aria-hidden="true"></div>
+          <div class="exercise-topline">
+            <div>
+              <p class="eyebrow">Recorded exercises only</p>
+              <h2 id="trend-manager-title">Choose trend</h2>
+            </div>
+            <button class="ghost-button" type="button" data-close-trend-manager>Close</button>
+          </div>
+          <p class="sheet-note" data-trend-manager-note>Four trends are pinned. Pick one below to replace the selected chart.</p>
+          <div class="trend-options" data-trend-options></div>
+        </div>
+      </section>
+
+      <div class="toast" data-toast hidden>Saved as standard workout</div>
+
+      <section class="screen" id="coach-screen" aria-labelledby="coach-tab">
+        <section class="coach-engine" data-coach-engine>
+          <div>
+            <span class="metric-label">AI Coach</span>
+            <h2 data-coach-engine-title>Ready to check your plan</h2>
+            <p data-coach-engine-copy>Analyze your latest workouts and Apple Watch signals to get suggestions matched to your current goal.</p>
+          </div>
+          <div class="coach-engine-actions">
+            <button class="small-button" type="button" data-run-ai-coach>Analyze latest data</button>
+            <button class="ghost-button" type="button" data-show-later-coach hidden>Show later suggestions</button>
+          </div>
+          <div class="coach-signals" data-coach-signals hidden></div>
+          <details class="coach-data-scope" data-coach-data-scope hidden></details>
+        </section>
+
+        <div data-coach-card-list></div>
+      </section>
+
+      <section class="screen" id="profile-screen" aria-labelledby="profile-tab">
+        <div data-profile-home>
+        <section class="profile-card">
+          <div class="profile-head">
+            <div class="avatar" aria-hidden="true">Q</div>
+            <div>
+              <span class="metric-label">Profile</span>
+              <h2 data-profile-name>Set up profile</h2>
+              <p data-profile-subtitle>Choose your goals and connect health data</p>
+            </div>
+          </div>
+          <div class="profile-stats">
+            <div><strong data-profile-recording-count>58</strong><span>recordings</span></div>
+            <div><strong data-profile-active-calories>12.4k</strong><span>active <span data-energy-unit>kcal</span></span></div>
+            <div><strong data-profile-training-time>31h</strong><span>training time</span></div>
+          </div>
+        </section>
+
+        <section class="profile-section">
+          <div class="section-heading compact">
+            <h2>Personal</h2>
+            <span>Body data and coaching profile</span>
+          </div>
+          <button class="profile-row" type="button" data-profile-detail="personal">
+            <span>Personal info</span>
+            <strong data-profile-personal-summary>Not set</strong>
+          </button>
+        </section>
+
+        <section class="profile-section">
+          <div class="section-heading compact">
+            <h2>Data</h2>
+            <span>Personal records and exports</span>
+          </div>
+          <button class="profile-row" type="button" data-profile-detail="recordings">
+            <span>Previous recordings</span>
+            <strong>View history</strong>
+          </button>
+          <button class="profile-row" type="button" data-profile-detail="health">
+            <span>Apple Health data</span>
+            <strong>Connected</strong>
+          </button>
+          <button class="profile-row" type="button" data-profile-detail="exercises">
+            <span>Exercise database</span>
+            <strong>Recorded only</strong>
+          </button>
+          <button class="profile-row" type="button" data-profile-detail="testing">
+            <span>Tester feedback</span>
+            <strong>Export / copy</strong>
+          </button>
+        </section>
+
+        <section class="profile-section">
+          <div class="section-heading compact">
+            <h2>Saved Standards</h2>
+            <span>Reusable workout templates</span>
+          </div>
+          <button class="profile-row" type="button" data-profile-detail="standards">
+            <span>Manage standard workouts</span>
+            <strong>View / edit / delete</strong>
+          </button>
+        </section>
+
+        <section class="profile-section">
+          <div class="section-heading compact">
+            <h2>Settings</h2>
+            <span>App preferences</span>
+          </div>
+          <button class="profile-row" type="button" data-profile-detail="language">
+            <span>Language</span>
+            <strong>English</strong>
+          </button>
+          <button class="profile-row" type="button" data-profile-detail="units">
+            <span>Units</span>
+            <strong>lb / kcal</strong>
+          </button>
+          <button class="profile-row" type="button" data-profile-detail="goals">
+            <span>Goals</span>
+            <strong>Strength trend</strong>
+          </button>
+        </section>
+        </div>
+
+        <section class="profile-detail" data-profile-detail-panel hidden>
+          <button class="ghost-button back-button" type="button" data-profile-back>Back to Profile</button>
+          <div class="profile-detail-hero">
+            <span class="metric-label">Profile</span>
+            <h2 data-profile-detail-title>Previous recordings</h2>
+            <p data-profile-detail-copy>Review past workout data and update what LiftTrend should track.</p>
+          </div>
+          <div class="profile-detail-body" data-profile-detail-body></div>
+        </section>
+      </section>
+
+      <nav class="bottom-nav" aria-label="Primary navigation">
+        <button class="nav-item active" id="today-tab" type="button" data-screen="today-screen">
+          <span class="nav-icon today-icon" aria-hidden="true"></span>
+          <span>Today</span>
+        </button>
+        <button class="nav-item" id="trends-tab" type="button" data-screen="trends-screen">
+          <span class="nav-icon trends-icon" aria-hidden="true"></span>
+          <span>Trends</span>
+        </button>
+        <button class="nav-item" id="coach-tab" type="button" data-screen="coach-screen">
+          <span class="nav-icon coach-icon" aria-hidden="true"></span>
+          <span>AI Coach</span>
+        </button>
+        <button class="nav-item" id="profile-tab" type="button" data-screen="profile-screen">
+          <span class="nav-icon profile-icon" aria-hidden="true"></span>
+          <span>Profile</span>
+        </button>
+      </nav>
+    </main>
+
+    <script src="domain.js?v=20260728-profile-zh1"></script>
+    <script src="app.js?v=20260728-profile-zh1"></script>
+  </body>
+</html>
