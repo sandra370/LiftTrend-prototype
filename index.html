@@ -19,11 +19,11 @@
           <p class="eyebrow">LiftTrend</p>
           <h1 id="screen-title">Today</h1>
         </div>
-        <button class="watch-button" type="button" aria-label="Apple Watch connected" data-open-health>
+        <button class="watch-button" type="button" aria-label="Apple Watch not connected" data-open-health>
           <span class="watch-icon" aria-hidden="true"></span>
           <span>
             <strong>Watch</strong>
-            <small>Connected</small>
+            <small>Not connected</small>
           </span>
         </button>
       </header>
@@ -36,15 +36,18 @@
           <div class="onboarding-grid">
             <label><span>Name</span><input placeholder="Your name" data-onboard-name /></label>
             <label><span>Age</span><input placeholder="Optional" inputmode="numeric" data-onboard-age /></label>
-            <label><span>Height</span><input placeholder="Optional" inputmode="decimal" data-onboard-height /></label>
-            <label><span>Weight</span><input placeholder="Optional" inputmode="decimal" data-onboard-weight /></label>
+            <div class="split-fields onboarding-height-fields">
+              <label><span>Height (ft)</span><input placeholder="ft" inputmode="numeric" data-onboard-height-ft /></label>
+              <label><span>Height (in)</span><input placeholder="in" inputmode="decimal" data-onboard-height-in /></label>
+            </div>
+            <label><span>Weight (lb)</span><input placeholder="lb" inputmode="decimal" data-onboard-weight /></label>
             <label><span>Sex</span><select data-onboard-sex><option value="">Choose</option><option>Female</option><option>Male</option><option>Prefer not to say</option></select></label>
             <label><span>Training frequency</span><select data-onboard-frequency><option value="">Choose</option><option>3 days/week</option><option>4 days/week</option><option>5+ days/week</option></select></label>
             <label><span>General goal</span><select data-onboard-goal><option value="">Choose</option><option>Fat loss</option><option>Lean muscle</option><option>Bulk</option><option>Strength</option><option>General health</option></select></label>
             <label><span>Focus areas</span><input placeholder="Glutes, back, chest..." data-onboard-focus /></label>
-            <label><span>Target weight</span><input placeholder="Optional" inputmode="decimal" data-onboard-target-weight /></label>
-            <label><span>Current body fat</span><input placeholder="Optional" data-onboard-current-body-fat /></label>
-            <label><span>Target body fat</span><input placeholder="Optional" data-onboard-body-fat /></label>
+            <label><span>Target weight (lb)</span><input placeholder="lb" inputmode="decimal" data-onboard-target-weight /></label>
+            <label><span>Current body fat (%)</span><input placeholder="%" data-onboard-current-body-fat /></label>
+            <label><span>Target body fat (%)</span><input placeholder="%" data-onboard-body-fat /></label>
           </div>
           <div class="action-row">
             <button class="small-button" type="button" data-save-onboarding>Save Profile</button>
@@ -136,17 +139,17 @@
           <div class="watch-strip">
             <div>
               <span class="metric-label">Heart rate</span>
-              <strong data-watch-heart-rate>128</strong>
+              <strong data-watch-heart-rate>--</strong>
               <span>bpm</span>
             </div>
             <div>
               <span class="metric-label">Active cal</span>
-              <strong data-watch-calories>214</strong>
+              <strong data-watch-calories>--</strong>
               <span data-energy-unit>kcal</span>
             </div>
             <div>
               <span class="metric-label">Time</span>
-              <strong data-watch-time>42</strong>
+              <strong data-watch-time>0</strong>
               <span>min</span>
             </div>
           </div>

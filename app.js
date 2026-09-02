@@ -509,11 +509,7 @@ const profileDetails = {
   recordings: {
     title: "Previous recordings",
     copy: "Review finished workouts, open set-level details, and compare recent sessions.",
-    items: [
-      ["Today · Abs Focus", "3 exercises · 42 min · 214 kcal"],
-      ["Jun 29 · Back Focus", "Lat pulldown PR · 5 exercises"],
-      ["Jun 27 · Glute Focus", "Hip thrust 135 lb · 4 x 10"],
-    ],
+    items: [],
   },
   health: {
     title: "Apple Health data",
@@ -816,6 +812,14 @@ const zhText = {
   "updated today": "今天已更新",
   "Body metrics permission off": "身体指标权限关闭",
   "Use Apple Health weight": "使用 Apple Health 体重",
+  "Choose Apple Health sync": "选择 Apple Health 同步",
+  "No Apple Health weight synced yet": "还没有同步 Apple Health 体重",
+  "Choose sync data": "选择同步数据",
+  "Sync selected": "同步所选项目",
+  "Not synced": "未同步",
+  "Connect Apple Health to show live data": "连接 Apple Health 后显示实时数据",
+  "App timer": "App 计时",
+  "Not connected to Apple Watch": "未连接 Apple Watch",
   "Save Personal Info": "保存个人信息",
   Female: "女性",
   Male: "男性",
@@ -908,7 +912,7 @@ const zhText = {
   "Keep at least one set detail": "至少保留一条组数详情",
   "Recording updated": "训练记录已更新",
   "Recording deleted": "训练记录已删除",
-  "Apple Health refreshed": "Apple Health 已刷新",
+  "Apple Health refreshed": "Apple Health 同步设置已更新",
   "Goal preset selected": "已选择目标预设",
   "Enable Body metrics permission first": "请先开启身体指标权限",
   "Apple Health weight imported": "Apple Health 体重已导入",
@@ -1212,29 +1216,7 @@ const zhRecommendationText = {
   },
 };
 
-let profileRecordings = [
-  {
-    date: "2026-07-14T12:00:00.000Z",
-    focusGroup: "abs",
-    title: "Today · Abs Focus",
-    meta: "3 exercises · 42 min · 214 kcal",
-    sets: ["Cable Crunch · 30 lb · 3 x 12", "Dead Bug · bodyweight · 3 x 10/side", "Plank · 3 x 45 sec"],
-  },
-  {
-    date: "2026-06-29T12:00:00.000Z",
-    focusGroup: "back",
-    title: "Jun 29 · Back Focus",
-    meta: "5 exercises · 51 min · 302 kcal",
-    sets: ["Lat Pulldown · 75 lb · 3 x 10", "Seated Row · 60 lb · 3 x 10", "Face Pull · 20 lb · 3 x 15"],
-  },
-  {
-    date: "2026-06-27T12:00:00.000Z",
-    focusGroup: "glutes",
-    title: "Jun 27 · Glute Focus",
-    meta: "4 exercises · 56 min · 338 kcal",
-    sets: ["Hip Thrust · 135 lb · 4 x 10", "Cable Kickback · 20 lb · 3 x 12/side", "Romanian Deadlift · 65 lb · 3 x 10"],
-  },
-];
+let profileRecordings = [];
 
 const healthPermissions = [
   ["Heart rate", "Read during workouts", false],
@@ -1253,7 +1235,7 @@ const healthSyncState = {
 const profileSettingsState = {
   language: "English",
   weightUnit: "lb",
-  bodyUnit: "cm",
+  bodyUnit: "ft/in",
   energyUnit: "kcal",
   goal: "",
   coachingStyle: "Balanced",
@@ -1290,7 +1272,7 @@ const userProfile = {
 };
 
 let currentWeightUnit = "lb";
-let currentDistanceUnit = "m";
+let currentDistanceUnit = "mi";
 let pendingDeleteRecordingIndex = null;
 let editingRecordingIndex = null;
 
@@ -1828,7 +1810,7 @@ function measurementUnit() {
 }
 
 function distanceUnit() {
-  return bodyUnit() === "cm" ? "m" : "yd";
+  return bodyUnit() === "cm" ? "m" : "mi";
 }
 
 function energyUnit() {
@@ -1846,6 +1828,37 @@ function unitSummary() {
 function goalSummary() {
   const goal = localizedGoalText(profileSettingsState.goal || userProfile.generalGoal || tx("Goal not set"));
   return goal.length > 34 ? `${goal.slice(0, 31)}...` : goal;
+}
+
+function onboardingMetricLabel(label, unit = "") {
+  return unit ? `${tx(label)} (${unit})` : tx(label);
+}
+
+function applyOnboardingMetricLabels() {
+  const labelConfigs = [
+    ["Name"],
+    ["Age"],
+    ["Height", "ft"],
+    ["Height", "in"],
+    ["Weight", weightUnit()],
+    ["Sex"],
+    ["Training frequency"],
+    ["General goal"],
+    ["Focus areas"],
+    ["Target weight", weightUnit()],
+    ["Current body fat", "%"],
+    ["Target body fat", "%"],
+  ];
+  document.querySelectorAll(".onboarding-grid label span").forEach((label, index) => {
+    const [text, unit] = labelConfigs[index] || [label.textContent || ""];
+    label.textContent = onboardingMetricLabel(text, unit);
+  });
+  document.querySelector("[data-onboard-height-ft]")?.setAttribute("placeholder", "ft");
+  document.querySelector("[data-onboard-height-in]")?.setAttribute("placeholder", "in");
+  document.querySelector("[data-onboard-weight]")?.setAttribute("placeholder", weightUnit());
+  document.querySelector("[data-onboard-target-weight]")?.setAttribute("placeholder", weightUnit());
+  document.querySelector("[data-onboard-current-body-fat]")?.setAttribute("placeholder", "%");
+  document.querySelector("[data-onboard-body-fat]")?.setAttribute("placeholder", "%");
 }
 
 function profileGoalFromFields(generalGoal, focusAreas) {
@@ -1869,6 +1882,7 @@ function convertMeasurementValue(value, fromUnit, toUnit) {
 
 function formatDistanceNumber(value, unit) {
   if (!Number.isFinite(value)) return "";
+  if (unit === "mi" && value < 1) return value.toFixed(2).replace(/0$/, "");
   if (unit === "mi" || unit === "km") return `${Math.round(value * 10) / 10}`;
   return `${Math.round(value)}`;
 }
@@ -2189,10 +2203,16 @@ function estimateWorkoutCalories(minutes) {
 
 function renderWorkoutTelemetry() {
   if (!watchHeartRate || !watchCalories || !watchTime) return;
+  const heartUnit = watchHeartRate.parentElement?.querySelector("span:last-child");
+  const calorieUnit = watchCalories.parentElement?.querySelector("span:last-child");
+  const timeUnit = watchTime.parentElement?.querySelector("span:last-child");
   if (workoutSession.hidden || !currentWorkoutStartedAt) {
     watchHeartRate.textContent = "--";
-    watchCalories.textContent = "0";
+    watchCalories.textContent = healthSyncState.connected ? "0" : "--";
     watchTime.textContent = "0";
+    if (heartUnit) heartUnit.textContent = healthSyncState.connected ? "bpm" : tx("Not connected");
+    if (calorieUnit) calorieUnit.textContent = healthSyncState.connected ? energyUnit() : tx("Not connected");
+    if (timeUnit) timeUnit.textContent = healthSyncState.connected ? "min" : tx("App timer");
     return;
   }
 
@@ -2200,9 +2220,12 @@ function renderWorkoutTelemetry() {
   const calories = estimateWorkoutCalories(minutes);
   currentWorkoutMinutes = minutes;
   currentWorkoutCalories = calories;
-  watchHeartRate.textContent = String(112 + ((minutes * 7) % 24));
-  watchCalories.textContent = formatEnergyFromKcal(calories);
+  watchHeartRate.textContent = healthSyncState.connected ? String(112 + ((minutes * 7) % 24)) : "--";
+  watchCalories.textContent = healthSyncState.connected ? formatEnergyFromKcal(calories) : "--";
   watchTime.textContent = String(minutes);
+  if (heartUnit) heartUnit.textContent = healthSyncState.connected ? "bpm" : tx("Not connected");
+  if (calorieUnit) calorieUnit.textContent = healthSyncState.connected ? energyUnit() : tx("Not connected");
+  if (timeUnit) timeUnit.textContent = healthSyncState.connected ? "min" : tx("App timer");
 }
 
 function networkLabel() {
@@ -2581,10 +2604,7 @@ function applyLanguagePreference() {
   setText(".onboarding-panel .metric-label", "Welcome to LiftTrend");
   setText(".onboarding-panel h2", "Set up your coaching profile");
   setText(".onboarding-panel p", "Basic body data and goals help AI Coach personalize volume, progression, recovery, and Apple Health updates.");
-  ["Name", "Age", "Height", "Weight", "Sex", "Training frequency", "General goal", "Focus areas", "Target weight", "Current body fat", "Target body fat"].forEach((labelText, index) => {
-    const label = document.querySelectorAll(".onboarding-grid label span")[index];
-    if (label) label.textContent = tx(labelText);
-  });
+  applyOnboardingMetricLabels();
   setText("[data-save-onboarding]", "Save Profile");
   setText("[data-skip-onboarding]", "Skip");
   setText("#today-screen .focus-hero .metric-label", "Ready to train");
@@ -4421,6 +4441,7 @@ function renderPersonalDetail() {
   const latestMetrics = latestBodyMetricEntry();
   const metricDate = todayDateString();
   const canImportBodyMetrics = bodyMetricsPermissionEnabled();
+  const hasHealthWeight = Boolean(String(userProfile.appleHealthWeight || "").trim());
   const feetDecimal = Number(convertHeightValue(userProfile.heightCm, "cm", "ft"));
   const displayedFeet = Number.isFinite(feetDecimal) ? String(Math.floor(feetDecimal)) : "";
   const displayedInches = Number.isFinite(feetDecimal) ? String(Math.round((feetDecimal - Math.floor(feetDecimal)) * 12)) : "";
@@ -4450,7 +4471,7 @@ function renderPersonalDetail() {
 
   const form = document.createElement("div");
   form.className = "profile-form personal-form";
-  form.innerHTML = `<label><span>${tx("Name")}</span><input value="${escapeHtml(userProfile.name)}" data-profile-field="name" /></label><label><span>${tx("Age")}</span><input value="${escapeHtml(userProfile.age)}" inputmode="numeric" data-profile-field="age" /></label>${heightFields}<div class="profile-form-section"><strong>${tx("Log body metrics")}</strong><span>${tx("Each body metric entry needs a date so Trends can calculate changes accurately. Latest saved:")} ${escapeHtml(latestSaved)}</span></div><label><span>${tx("Metric date")}</span><input type="date" value="${escapeHtml(metricDate)}" max="${todayDateString()}" data-profile-field="metricDate" /></label><label><span>${tx("Weight")} ${weightUnit()}</span><input value="${escapeHtml(displayedWeight)}" inputmode="decimal" data-profile-field="weight" /></label><label><span>${tx("Body fat")}</span><input value="${escapeHtml(userProfile.bodyFat)}" data-profile-field="bodyFat" /></label><label><span>${tx("Sex")}</span><select data-profile-field="sex">${sexOptions}</select></label><label><span>${tx("Training frequency")}</span><select data-profile-field="frequency">${frequencyOptions}</select></label><label><span>${tx("General goal")}</span><select data-profile-field="generalGoal">${generalGoalOptions}</select></label><label><span>${tx("Focus areas")}</span><input value="${escapeHtml(userProfile.focusAreas)}" data-profile-field="focusAreas" /></label><label><span>${tx("Target weight")} ${weightUnit()}</span><input value="${escapeHtml(displayedTargetWeight)}" inputmode="decimal" data-profile-field="targetWeight" /></label><label><span>${tx("Target body fat")}</span><input value="${escapeHtml(userProfile.targetBodyFat)}" data-profile-field="targetBodyFat" /></label><div class="profile-form-section"><strong>${tx("Body measurements")}</strong><span>${tx("Saved with the metric date above for waist, hip, thigh, and arm trends.")}</span></div>${measurementFields}<div class="health-import"><strong>${tx("Apple Health weight")}</strong><span>${formatProfileWeight(userProfile.appleHealthWeight)} · ${canImportBodyMetrics ? tx("updated today") : tx("Body metrics permission off")}</span><button class="ghost-button" type="button" data-import-health-weight${canImportBodyMetrics ? "" : " disabled"}>${tx("Use Apple Health weight")}</button></div><button class="small-button" type="button" data-save-personal>${tx("Save Personal Info")}</button>`;
+  form.innerHTML = `<label><span>${tx("Name")}</span><input value="${escapeHtml(userProfile.name)}" data-profile-field="name" /></label><label><span>${tx("Age")}</span><input value="${escapeHtml(userProfile.age)}" inputmode="numeric" data-profile-field="age" /></label>${heightFields}<div class="profile-form-section"><strong>${tx("Log body metrics")}</strong><span>${tx("Each body metric entry needs a date so Trends can calculate changes accurately. Latest saved:")} ${escapeHtml(latestSaved)}</span></div><label><span>${tx("Metric date")}</span><input type="date" value="${escapeHtml(metricDate)}" max="${todayDateString()}" data-profile-field="metricDate" /></label><label><span>${tx("Weight")} ${weightUnit()}</span><input value="${escapeHtml(displayedWeight)}" inputmode="decimal" data-profile-field="weight" /></label><label><span>${tx("Body fat")}</span><input value="${escapeHtml(userProfile.bodyFat)}" data-profile-field="bodyFat" /></label><label><span>${tx("Sex")}</span><select data-profile-field="sex">${sexOptions}</select></label><label><span>${tx("Training frequency")}</span><select data-profile-field="frequency">${frequencyOptions}</select></label><label><span>${tx("General goal")}</span><select data-profile-field="generalGoal">${generalGoalOptions}</select></label><label><span>${tx("Focus areas")}</span><input value="${escapeHtml(userProfile.focusAreas)}" data-profile-field="focusAreas" /></label><label><span>${tx("Target weight")} ${weightUnit()}</span><input value="${escapeHtml(displayedTargetWeight)}" inputmode="decimal" data-profile-field="targetWeight" /></label><label><span>${tx("Target body fat")}</span><input value="${escapeHtml(userProfile.targetBodyFat)}" data-profile-field="targetBodyFat" /></label><div class="profile-form-section"><strong>${tx("Body measurements")}</strong><span>${tx("Saved with the metric date above for waist, hip, thigh, and arm trends.")}</span></div>${measurementFields}<div class="health-import"><div><strong>${tx("Apple Health weight")}</strong><span>${hasHealthWeight ? `${formatProfileWeight(userProfile.appleHealthWeight)} · ${tx("updated today")}` : tx("No Apple Health weight synced yet")}</span></div><button class="ghost-button" type="button" data-open-health-settings>${canImportBodyMetrics && hasHealthWeight ? tx("Use Apple Health weight") : tx("Choose Apple Health sync")}</button></div><button class="small-button" type="button" data-save-personal>${tx("Save Personal Info")}</button>`;
   profileDetailBody.append(form);
 }
 
@@ -4960,7 +4981,15 @@ function formatSyncTime(value) {
 function healthMetricCards() {
   const latestMetrics = latestBodyMetricEntry();
   const latestWorkout = latestIncludedRecording(profileRecordings);
-  const currentHeartRate = workoutSession.hidden ? "Ready" : `${watchHeartRate?.textContent || "--"} bpm`;
+  if (!healthSyncState.connected) {
+    return [
+      [tx("Heart rate"), "--", tx("Connect Apple Health to show live data")],
+      [tx("Active calories"), "--", tx("Connect Apple Health to show live data")],
+      [tx("Workout duration"), "--", tx("Connect Apple Health to show live data")],
+      [tx("Weight"), "--", tx("No Apple Health weight synced yet")],
+    ];
+  }
+  const currentHeartRate = workoutSession.hidden ? tx("Not synced") : `${watchHeartRate?.textContent || "--"} bpm`;
   return [
     [tx("Heart rate"), currentHeartRate, workoutSession.hidden ? tx("Available during active workout") : tx("Live from current session")],
     [tx("Active calories"), latestWorkout ? `${formatEnergyFromKcal(workoutCalories(latestWorkout), { empty: "0" })} ${energyUnit()}` : `0 ${energyUnit()}`, latestWorkout?.title || tx("No workout yet")],
@@ -4972,7 +5001,7 @@ function healthMetricCards() {
 function renderHealthDetail() {
   const hero = document.createElement("div");
   hero.className = "health-sync-card";
-  hero.innerHTML = `<div><span class="metric-label">${tx("Apple Watch")}</span><strong>${healthSyncState.connected ? tx("Connected") : tx("Not connected")}</strong><p>${escapeHtml(healthSyncState.device)} · ${isChineseLanguage() ? "上次同步" : "last sync"} ${escapeHtml(formatSyncTime(healthSyncState.lastSyncAt))}</p></div><button class="small-button" type="button" data-refresh-health>${tx("Refresh")}</button>`;
+  hero.innerHTML = `<div><span class="metric-label">${tx("Apple Watch")}</span><strong>${healthSyncState.connected ? tx("Connected") : tx("Not connected")}</strong><p>${escapeHtml(healthSyncState.connected ? `${healthSyncState.device} · ${isChineseLanguage() ? "上次同步" : "last sync"} ${formatSyncTime(healthSyncState.lastSyncAt)}` : tx("Choose sync data"))}</p></div><button class="small-button" type="button" data-refresh-health>${tx("Sync selected")}</button>`;
   profileDetailBody.append(hero);
 
   const metrics = document.createElement("div");
@@ -5064,10 +5093,11 @@ function upsertManualBodyMetricEntry(metricDate, { includeMeasurements = true } 
 }
 
 function syncAppleHealthData() {
+  healthSyncState.connected = healthPermissions.some(([, , enabled]) => enabled);
   healthSyncState.lastSyncAt = new Date().toISOString();
 
   const bodyMetricsEnabled = bodyMetricsPermissionEnabled();
-  if (bodyMetricsEnabled) {
+  if (bodyMetricsEnabled && String(userProfile.appleHealthWeight || "").trim()) {
     const metricDate = todayDateString();
     const bodyMetricEntries = ensureBodyMetricEntries();
     const existingEntryIndex = bodyMetricEntries.findIndex((entry) => entry.date === metricDate);
@@ -5081,6 +5111,7 @@ function syncAppleHealthData() {
   }
 
   renderProfileSummary();
+  renderWorkoutTelemetry();
   renderBodyMetricsTrend();
   saveAppState();
   openProfileDetail("health");
@@ -5282,7 +5313,13 @@ function completeOnboarding(message) {
 
 function saveUserProfileFromOnboarding() {
   const ageValue = parseOptionalPositiveNumber(document.querySelector("[data-onboard-age]")?.value, userProfile.age);
-  const heightCm = parseOptionalPositiveNumber(document.querySelector("[data-onboard-height]")?.value, userProfile.heightCm);
+  const heightFt = parseOptionalPositiveNumber(document.querySelector("[data-onboard-height-ft]")?.value, "");
+  const heightIn = parseOptionalPositiveNumber(document.querySelector("[data-onboard-height-in]")?.value, "");
+  const heightCm = heightFt === null || heightIn === null
+    ? null
+    : heightFt === "" && heightIn === ""
+      ? userProfile.heightCm
+      : convertHeightValue((Number(heightFt) || 0) + (Number(heightIn) || 0) / 12, "ft", "cm");
   const weightLb = parseOptionalPositiveNumber(document.querySelector("[data-onboard-weight]")?.value, userProfile.weightLb);
   const targetWeightLb = parseOptionalPositiveNumber(document.querySelector("[data-onboard-target-weight]")?.value, userProfile.targetWeightLb);
   const bodyFat = parseOptionalPercent(document.querySelector("[data-onboard-current-body-fat]")?.value, userProfile.bodyFat);
@@ -5294,13 +5331,13 @@ function saveUserProfileFromOnboarding() {
   userProfile.name = document.querySelector("[data-onboard-name]")?.value.trim() || userProfile.name;
   userProfile.age = String(ageValue);
   userProfile.heightCm = String(heightCm);
-  userProfile.weightLb = String(weightLb);
+  userProfile.weightLb = weightUnit() === "kg" ? convertWeightValue(weightLb, "kg", "lb") : String(weightLb);
   userProfile.bodyFat = bodyFat;
   userProfile.sex = document.querySelector("[data-onboard-sex]")?.value || userProfile.sex;
   userProfile.frequency = document.querySelector("[data-onboard-frequency]")?.value || userProfile.frequency;
   userProfile.generalGoal = document.querySelector("[data-onboard-goal]")?.value || userProfile.generalGoal;
   userProfile.focusAreas = document.querySelector("[data-onboard-focus]")?.value || userProfile.focusAreas;
-  userProfile.targetWeightLb = String(targetWeightLb);
+  userProfile.targetWeightLb = weightUnit() === "kg" ? convertWeightValue(targetWeightLb, "kg", "lb") : String(targetWeightLb);
   userProfile.targetBodyFat = targetBodyFat;
   profileSettingsState.goal = profileGoalFromFields(userProfile.generalGoal, userProfile.focusAreas);
   upsertManualBodyMetricEntry(todayDateString(), { includeMeasurements: false });
@@ -5828,7 +5865,9 @@ document.addEventListener("click", (event) => {
   if (healthToggle) {
     const index = Number(healthToggle.dataset.healthToggle);
     healthPermissions[index][2] = !healthPermissions[index][2];
+    healthSyncState.connected = healthPermissions.some(([, , enabled]) => enabled);
     renderProfileSummary();
+    renderWorkoutTelemetry();
     saveAppState();
     openProfileDetail("health");
     showToast(localizedHealthPermissionToast(healthPermissions[index]));
@@ -5904,6 +5943,10 @@ document.addEventListener("click", (event) => {
       showToast(tx("Enable Body metrics permission first"));
       return;
     }
+    if (!String(userProfile.appleHealthWeight || "").trim()) {
+      showToast(tx("No Apple Health weight synced yet"));
+      return;
+    }
     userProfile.weightLb = userProfile.appleHealthWeight;
     const metricDate = profileDetailBody.querySelector('[data-profile-field="metricDate"]')?.value || "";
     if (!isValidPastOrTodayDateValue(metricDate)) {
@@ -5927,6 +5970,10 @@ document.addEventListener("click", (event) => {
     renderBodyMetricsTrend();
     saveAppState();
     showToast(tx("Apple Health weight imported"));
+  }
+  if (event.target.closest("[data-open-health-settings]")) {
+    navigateToScreen("profile-screen");
+    openProfileDetail("health");
   }
   if (event.target.closest("[data-save-goals]")) {
     profileSettingsState.goal = profileDetailBody.querySelector("[data-goal-input]")?.value || profileSettingsState.goal;

@@ -2164,11 +2164,22 @@ input {
 
 .health-import {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
 }
 
 .health-import button {
-  grid-row: span 2;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.health-import > div {
+  min-width: 0;
+}
+
+.health-import span {
+  line-height: 1.35;
+  white-space: normal;
 }
 
 .choice-button {
